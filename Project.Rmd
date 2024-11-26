@@ -1,0 +1,178 @@
+---
+title: "PROJECT"
+author: "Srishti Patil"
+date: "2024-11-24"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+library(readr)
+library(fpp)
+library(fpp2)
+library(forecast)
+library(readxl)
+library(ggplot2)
+
+file_path <- "C:\\Users\\Srishti\\Desktop\\FALL24\\BF\\Assignment3\\Data_NewYork.xlsx"
+teriesData <- read_excel(file_path)
+head(teriesData)
+timeSeriesData <- ts(teriesData$UnemployedLF, start=c(1976, 1), frequency=12)
+plot(timeSeriesData)
+Acf(timeSeriesData)
+summary(timeSeriesData)
+boxplot(timeSeriesData)
+
+###########Mean
+mean_forecast <- meanf(timeSeriesData)
+plot(mean_forecast)
+print(mean_forecast)
+#residuals
+plot(mean_forecast$residuals, ylab="Residual")
+hist(mean_forecast$residuals, xlab="Residual")
+plot(mean_forecast$fitted,mean_forecast$residuals,xy.labels = FALSE,xy.lines = FALSE)
+plot(mean_forecast$x, mean_forecast$residuals)
+
+
+
+
+#########Naive
+naive_forecast <- naive(timeSeriesData,5)
+print(naive_forecast)
+plot(naive_forecast)
+#residuals
+plot(naive_forecast$residuals, main = "Naive forecast residuals plot")
+hist(naive_forecast$residuals, main ='Histogram of Residuals')
+plot(naive_forecast$fitted,naive_forecast$residuals,xy.labels = FALSE,xy.lines = FALSE)
+plot(naive_forecast$x, naive_forecast$residuals)
+Acf(naive_forecast$residuals, main = "ACF of Naive residuals")
+
+
+
+
+############ Moving Averages
+MA3_forecast <- ma(timeSeriesData,order=3)
+MA6_forecast <- ma(timeSeriesData,order=6)
+MA9_forecast <- ma(timeSeriesData,order=9)
+plot(timeSeriesData)
+lines(MA3_forecast, col="red")
+lines(MA6_forecast, col="green")
+lines(MA9_forecast, col="blue")
+
+
+
+
+########### Decomposition
+stl_decomposition <- stl(timeSeriesData, s.window = "periodic")
+plot(stl_decomposition)
+
+#seasonal adjustment
+SATS <- seasadj(stl_decomposition)
+plot(SATS)
+SATS
+
+
+
+
+
+###############Exponential Smoothing Methods
+ets_forecast <- ets(timeSeriesData)
+plot(ets_forecast)
+ets_forecast
+#residual
+ets_residual <- ets_forecast$residuals
+ets_fitted <- ets_forecast$fitted
+plot(ets_residual, ylab="Residual")
+hist(ets_residual, xlab="Residual")
+plot(ets_forecast$fitted,ets_forecast$residuals,xy.labels = FALSE,xy.lines = FALSE)
+plot(ets_forecast$x, ets_forecast$residuals)
+
+
+
+
+
+
+
+############## Simple exponential smoothing
+ses_model <- ses(timeSeriesData, h = 12)
+print(ses_model)
+plot(ses_model)
+#residuals
+plot(ses_model$residuals, main = "Simple Smoothing forecast residuals plot")
+hist(ses_model$residuals, main ='Histogram of Residuals')
+plot(ses_model$fitted,ses_model$residuals,xy.labels = FALSE,xy.lines = FALSE)
+plot(ses_model$x, ses_model$residuals)
+
+
+
+
+
+
+############ HoltWinters
+HW_forecast <- hw(timeSeriesData)
+print(HW_forecast)
+plot(HW_forecast)
+#residuals
+residuals <- residuals(HW_forecast)
+plot(residuals, main = "Holt-Winters Residuals")
+hist(residuals, main ='Histogram of Residuals')
+plot(HW_forecast$fitted,HW_forecast$residuals,xy.labels = FALSE,xy.lines = FALSE)
+plot(HW_forecast$fitted, HW_forecast$residuals)
+
+
+accuracy(mean_forecast)
+accuracy(naive_forecast)
+accuracy(ses_model)
+accuracy(ets_forecast)
+accuracy(HW_forecast)
+
+
+
+#Regresssion
+plot(teriesData$UnemployedLF,teriesData$Population,pch=19,col="blue")
+lm1 <- lm(teriesData$Population~teriesData$UnemployedLF)
+plot(teriesData$UnemployedLF,teriesData$Population,pch=19,col="blue")
+lines(teriesData$UnemployedLF, lm1$fitted, col="black")
+smoothScatter(teriesData$UnemployedLF,teriesData$Population)
+abline(lm1,col="red",lwd=3)
+summary(lm1)
+#residual analysis
+plot(lm1)
+hist(residuals(lm1), main="Histogram of Residuals", xlab="Residuals", col="pink")
+plot(lm1$fitted.values, residuals(lm1), main="Residuals vs Fitted", 
+     xlab="Fitted Values", ylab="Residuals", pch=19, col="blue")
+abline(h=0, col="red", lwd=2)
+
+
+
+
+
+
+#ARIMA
+ndiffs(timeSeriesData)
+tsdisplay(timeSeriesData)
+timeseriesdiff1 <- diff(timeSeriesData, differences=1)
+plot(timeseriesdiff1)
+tsdisplay(timeseriesdiff1)
+auto_fit <- auto.arima(timeSeriesData, trace=TRUE, stepwise = FALSE)
+auto_fit
+attributes(auto_fit)
+plot(forecast(auto_fit,h=5,level=c(99.5)))
+#Run Residual Analysis
+Acf(auto_fit$residuals)
+Box.test(residuals(auto_fit), lag=20, type="Ljung")
+plot.ts(residuals(auto_fit))
+hist(auto_fit$residuals)
+tsdiag(auto_fit)
+
+
+
+
+
+
+```
+
+
+
