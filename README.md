@@ -1,4 +1,4 @@
-📉 #Unemployment Forecasting for NYC Population
+# Unemployment Forecasting for NYC Population
 
 **Overview** <br>
 This project aims to forecast unemployment trends in New York City's labor force, helping policymakers, businesses, and economists make informed decisions. Using time series forecasting models, we analyze historical unemployment data to predict future trends and assess economic patterns. <br>
